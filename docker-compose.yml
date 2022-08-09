@@ -1,0 +1,40 @@
+version: "3.8"
+services:
+  mysqldb:
+    restart: unless-stopped
+    image: mysql
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_DATABASE=test
+      - MYSQL_ROOT_PASSWORD=12345
+    volumes:
+      - db:/var/lib/mysql
+  app:
+    image: batch-processing
+    build: .
+    ports:
+      - 8086:8086
+    depends_on:
+      - mysqldb
+    restart: on-failure
+    volumes:
+      - .m2:/Users/pg/.m2
+    environment:
+      SPRING_APPLICATION_JSON: '{
+             "spring.datasource.url"  : "jdbc:mysql://mysqldb:3306/test?allowPublicKeyRetrieval=true&useSSL=false",
+             "spring.datasource.username" : "root",
+             "spring.datasource.password" : "12345",
+             "spring.jpa.properties.hibernate.dialect" : "org.hibernate.dialect.MySQL5InnoDBDialect",
+             "spring.jpa.hibernate.ddl-auto" : "create-drop"
+           }'
+    stdin_open: true
+    tty: true
+
+volumes:
+  db:
+
+
+
+
+
